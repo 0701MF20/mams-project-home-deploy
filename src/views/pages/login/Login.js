@@ -104,9 +104,9 @@ const Login = () => {
           const response2 = await axios.post(
             ROLE_RIGHTS_URL,
             {
-              userId: decodedToken.userId,
+              userId: decodedToken.LoginId,
               roleName: decodedToken.Role,
-              company: 'BRPL',
+              company: decodedToken.CompCode
             },
             {
               headers: {
