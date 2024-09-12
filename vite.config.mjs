@@ -8,6 +8,23 @@ export default defineConfig(() => {
     base: './',
     build: {
       outDir: 'build',
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react')) {
+                return 'vendor-react'; // Creates a separate chunk for React
+              }
+              if (id.includes('lodash')) {
+                return 'vendor-lodash'; // Creates a separate chunk for lodash (if used)
+              }
+              // You can add more chunking logic here based on your dependencies
+              return 'vendor'; // General vendor chunk
+            }
+          },
+        },
+      },
+      chunkSizeWarningLimit: 12000, // Increase chunk size limit if needed
     },
     css: {
       postcss: {
@@ -42,23 +59,10 @@ export default defineConfig(() => {
     server: {
       port: 3000,
       proxy: {
-        // https://vitejs.dev/config/server-options.html
+        // Proxy settings if needed
       },
-      // Configure the Vite server to handle client-side routing
-    // Ensure client-side routing is handled properly
-    // historyApiFallback: true,
-
-
-
+      // Uncomment this line if you want the server to fallback for client-side routing
+      // historyApiFallback: true,
     },
   }
 })
-
-
-
-
-
-
-
-
-
