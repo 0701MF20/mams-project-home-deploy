@@ -1,0 +1,24 @@
+// Import CoreUI's SCSS files
+@import "@coreui/coreui/scss/coreui";
+
+// Override CoreUI SASS variables for customization
+$form-floating-height:                  add(1.2rem, $input-height-border) !default; // Reduced height
+$form-floating-line-height:             1.00 !default;
+$form-floating-padding-x:               $input-padding-x !default;
+$form-floating-padding-y:               0.25rem !default; // Further reduced vertical padding
+$form-floating-input-padding-t:         0.25rem !default; // Further reduced top padding
+$form-floating-input-padding-b:         0.25rem !default; // Further reduced bottom padding
+$form-floating-label-height:            0.9em !default; // Smaller label height
+$form-floating-label-opacity:           0.5 !default; // Slightly more transparent label
+$form-floating-label-transform:         scale(.75) translateY(-.6rem) translateX(.1rem) !default; // Adjusted label transform for compactness
+$form-floating-label-disabled-color:    $gray-600 !default;
+$form-floating-transition:              opacity .1s ease-in-out, transform .1s ease-in-out !default;
+
+// Custom styles for specific components
+.custom-form-select {
+  font-size: 0.75rem; // Smaller font size for a compact look
+  padding: 0.2rem 0.4rem; // Further reduced padding
+  height: 1.8rem; // Further reduced height
+  line-height: 1.4; // Adjust line height for compactness
+  width: 100%; // Ensure full width if needed
+}
