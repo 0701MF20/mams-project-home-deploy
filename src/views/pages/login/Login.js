@@ -160,6 +160,10 @@ const Login = () => {
         progress: undefined,
       });
     }
+    const processingToastId = toast.loading('Processing... Please wait', {
+      position: "top-center",
+  });
+
     try {
       const response = await axios.post(LOGIN_URL, {
         id: username.trim(),
@@ -205,11 +209,18 @@ const Login = () => {
           // Dispatch actions to update Redux store
           dispatch({ type: 'setRoleRights', roleRights })
 
-          toast.success('Successfully Logged in', {
-            position: "top-center",
+          // toast.success('Successfully Logged in', {
+          //   position: "top-center",
+          //   autoClose: 1000,
+          //   progress: undefined,
+          // });
+
+          toast.update(processingToastId, {
+            render: 'Successfully Logged in',
+            type: "success",
+            isLoading: false,
             autoClose: 1000,
-            progress: undefined,
-          });
+        });
 
           navigate('/dashboard') // Navigate to the dashboard
 
@@ -234,11 +245,19 @@ const Login = () => {
 
     } catch (error) {
 
-      toast.error(error, {
-        position: "top-center",
+      toast.update(processingToastId, {
+        render: 'Error fetching data',
+        type: "error",
+        isLoading: false,
         autoClose: 1000,
-        progress: undefined,
-      });
+    });
+
+
+      // toast.error(error, {
+      //   position: "top-center",
+      //   autoClose: 1000,
+      //   progress: undefined,
+      // });
     }
 
 

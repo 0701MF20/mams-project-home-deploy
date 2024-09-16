@@ -42,7 +42,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import moment from 'moment'
 import { TextField } from '@mui/material';
-import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
+import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, GET_DAMAGE_MATERIAL_REPORT, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
 import { IoMdDownload } from "react-icons/io";
 import { useSelector } from 'react-redux'
 
@@ -447,32 +447,24 @@ const decodedToken = jwtDecode(token);
   const handleViewClick = async () => {
 
 
-    if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-      toast.error('Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
 
-    if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-      toast.error('Date From is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
+    //   toast.error('Date From is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-      toast.error('Date To is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
+    //   toast.error('Date To is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
     if (selectedValues.division === '' || selectedValues.division == null) {
       toast.error('Division is Mandatory', {
@@ -483,78 +475,46 @@ const decodedToken = jwtDecode(token);
       return;
     }
 
-    if (selectedValues.order === '' || selectedValues.order == null) {
-      toast.error('Order Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
 
-    if (selectedValues.activity === '' || selectedValues.activity == null) {
-      toast.error('Activity Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // const dateFrom = new Date(selectedValues.datefrom);
+    // const dateTo = new Date(selectedValues.dateTo);
 
-    if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-      toast.error('ZDIN not available for Loose Case Type', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-    const dateFrom = new Date(selectedValues.datefrom);
-    const dateTo = new Date(selectedValues.dateTo);
-
-    if (dateFrom > dateTo) {
-      toast.error('Date From should be less than Date To', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (dateFrom > dateTo) {
+    //   toast.error('Date From should be less than Date To', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
 
 
     const token = sessionStorage.getItem('authToken');
     const decodedToken = jwtDecode(token);
+  // Show a "processing" toast before starting the API call
+  const processingToastId = toast.loading('Processing... Please wait', {
+    position: "top-center",
+  });
 
     let pageNumber = 1;
-    const pageSize = 50;
+    const pageSize = 100;
 
     try {
       setLoader(true); // Show loader initially
       setData([]); // Clear previous data before starting new fetch
-      // Show a "processing" toast before starting the API call
-      const processingToastId = toast.loading('Processing... Please wait', {
-        position: "top-center",
-      });
-
+    
 
       while (true) {
         const response = await axios.post(
-          PHOTOUPLOAD_URL,
+          GET_DAMAGE_MATERIAL_REPORT,
           {
             userId: decodedToken.userId,
-            pageNumber: pageNumber,
-            caseType: selectedValues.caseType,
             division: selectedValues.division,
-            orderType: selectedValues.order,
-            activityType: selectedValues.activity,
             dateFrom: selectedValues.datefrom,
             dateTo: selectedValues.dateTo,
-
-            orderNo: selectedValues.orderno,
-            ca: selectedValues.caNo,
-            installerId: selectedValues.installername,
+            pageNumber: pageNumber,
+            pageSize: pageSize
           },
           {
             headers: {

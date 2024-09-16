@@ -431,13 +431,13 @@ const MCRPDFGen = () => {
             </tr>
             <tr>
                 <th colspan="8" class="report-title" style="text-align: center;">Meter Activity Report-${dataaa.activityType}  <span
-                        style="padding-left: 50px;">Report No:${dataaa.ca}${moment(dataaa.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DDMMYYYY')}</span></th>
+                        style="padding-left: 50px;">Report No:${dataaa.ca}${moment(dataaa.activityDate).format('DDMMYYYY')}</span></th>
             </tr>
         </thead>
         <tbody style="border-top: 2px solid black; border-bottom: 2px solid black;">
             <tr>
                 <td colspan="2">Division:${dataaa.division}</td>
-                <td colspan="2">Date:${dataaa.activityDate}</td>
+                <td colspan="2">Date:${moment(dataaa.activityDate).utc().format('DD/MM/YYYY')}</td>
                 <td colspan="2">CA No.:${dataaa.ca}</td>
                 <td colspan="2">Order No:${dataaa.orderId == '' ? 'Loose Order' : dataaa.orderId}</td>
             </tr>
@@ -1312,7 +1312,8 @@ const MCRPDFGen = () => {
                         <CTableDataCell className="text-center">{item.looseFlag}</CTableDataCell>
                         <CTableDataCell className="text-center">
                           {/* {item.activityDate} */}
-                          {moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')}
+                          {/* {moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')} */}
+                          {moment(item.activityDate).utc().format('DD/MM/YYYY')}
                         </CTableDataCell>
 
                         <CTableDataCell className="text-center">{item.looseFlag=="LOOSE"?item.lM_Division:item.division}</CTableDataCell>

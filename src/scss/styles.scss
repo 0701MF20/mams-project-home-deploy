@@ -1,0 +1,13 @@
+.bg-info-sidebar {
+  background-color: #17a2b8; /* Info variant blue */
+  color: #fff; /* Text color */
+}
+
+.bg-info-sidebar .c-sidebar-nav .nav-link {
+  color: #fff; /* Sidebar link text color */
+}
+
+.bg-info-sidebar .c-sidebar-header,
+.bg-info-sidebar .c-sidebar-footer {
+  background-color: #138496; /* Darker blue for header/footer */
+}

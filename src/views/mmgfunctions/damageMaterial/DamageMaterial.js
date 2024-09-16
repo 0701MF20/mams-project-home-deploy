@@ -42,7 +42,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import moment from 'moment'
 import { TextField } from '@mui/material';
-import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
+import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL, UPLOAD_DAMAGE_MATERIAL_DATA } from '../../../utils/ConstantURL'
 import { IoMdDownload } from "react-icons/io";
 import { useSelector } from 'react-redux'
 
@@ -68,8 +68,12 @@ const DamageMaterial = () => {
 
 
   const [imageGallery, setImageGallery] = useState(false)
-
-
+  const materials = [
+    { id: 'Meter Seal', label: 'Meter Seal' },
+    { id: 'Gunny Bag Seal', label: 'Gunny Bag Seal' },
+    { id: 'MCR', label: 'MCR' },
+    { id: 'Notice', label: 'Notice' }
+  ];
   const [divisions, setDivisions] = useState([]);
   const [orderTypes, setOrderTypes] = useState([]);
   const [activityTypes, setActivityTypes] = useState([]);
@@ -81,14 +85,10 @@ const DamageMaterial = () => {
 
   const [selectedValues, setSelectedValues] = useState({
     division: '',
-    order: '',
-    activity: '',
-    installername: '',
-    caNo: '',
-    orderno: '',
-    datefrom: null,
-    dateTo: null,
-    caseType: ''
+    material:'',
+    sno:'',
+    remarks:''
+   
   });
 
   const handleChange = (event, type) => {
@@ -242,202 +242,6 @@ const decodedToken = jwtDecode(token);
 
 
 
-  const handleExcelClick = async () => {
-    if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-      toast.error('Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-    if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-      toast.error('Date From is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-    if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-      toast.error('Date To is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-    if (selectedValues.division === '' || selectedValues.division == null) {
-      toast.error('Division is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-    if (selectedValues.order === '' || selectedValues.order == null) {
-      toast.error('Order Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-    if (selectedValues.activity === '' || selectedValues.activity == null) {
-      toast.error('Activity Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-
-    if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-
-      toast.error('ZDIN not allowed in loose case', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      })
-      return;
-    }
-
-    const dateFrom = new Date(selectedValues.datefrom);
-    const dateTo = new Date(selectedValues.dateTo);
-
-    if (dateFrom > dateTo) {
-      toast.error('Date From should be less than Date To', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
-
-
-   // Fetch the first page of data
-   const processingToastId = toast.loading('Processing... Please wait', {
-    position: "top-center",
-  });
-
-
-    const token = sessionStorage.getItem('authToken');
-
-    const decodedToken = jwtDecode(token);
-    console.log('Decoded Token:', decodedToken);
-
-    const requestPayload = {
-      userId: decodedToken.userId,
-      pageNumber: 1,
-      caseType: selectedValues.caseType,
-      division: selectedValues.division,
-      orderType: selectedValues.order,
-      activityType: selectedValues.activity,
-      dateFrom: selectedValues.datefrom,
-      dateTo: selectedValues.dateTo,
-      orderNo: selectedValues.orderno,
-      ca: selectedValues.caNo,
-      installerId: selectedValues.installername
-    };
-
-    try {
-      setLoader(true);
-
-      const response = await axios.post(PHOTOUPLOADEXCEL_URL, requestPayload, {
-        responseType: 'blob', // Ensure the response is handled as a blob
-        headers: {
-          Authorization: `Bearer ${token}`, // Include token in Authorization header
-        }
-      });
-
-      // Check for successful response and headers
-      if (response.status === 200) {
-        // Create a URL for the Blob
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
-
-        // Extract the filename from the content-disposition header
-        const contentDisposition = response.headers['content-disposition'];
-        const filename = contentDisposition ? contentDisposition.split('filename=')[1].split(';')[0].replace(/"/g, '') : 'data.xlsx';
-
-        // Create a link element and click it to trigger the download
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filename); // Set the filename
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        // Clean up the URL object
-        window.URL.revokeObjectURL(url);
-
-        // Optional: Inform the user that the file was downloaded
-        toast.success('File downloaded successfully!', {
-          position: "top-center",
-          autoClose: 1000,
-          progress: undefined,
-        });
-      } else {
-        throw new Error('Unexpected response status');
-      }
-    } catch (error) {
-
-
-      // Handle errors
-      // console.error('Error during file download:', error);
-      // toast.error('Error fetching data', {
-      //   position: "top-center",
-      //   autoClose: 1000,
-      //   progress: undefined,
-      // });
-      if (error.response) {
-        // The server responded with a status code different from 2xx
-        if (error.response.status === 404) {
-          // Handle "No Content" scenario
-          console.log('No data found.');
-
-          toast.update(processingToastId, {
-            render: `No Data Found`,
-            type: "error",
-            isLoading: false,
-            autoClose: 1000,
-          });
-        } else if (error.response.status === 500) {
-          // Handle server errors
-          console.error('Server error occurred:', error.response.data);
-          toast.update(processingToastId, {
-            render: `Error:${error}`,
-            type: "error",
-            isLoading: false,
-            autoClose: 1000,
-          });
-
-        } else {
-          // Handle other HTTP status codes
-          console.error('Request failed with status code:', error.response.status);
-          toast.update(processingToastId, {
-            render: `Error:${error}`,
-            type: "error",
-            isLoading: false,
-            autoClose: 1000,
-          });
-        }
-      } else {
-        // Handle network or other errors
-        console.error('An error occurred:', error.message);
-      }
-
-
-
-
-
-    } finally {
-      setLoader(false); // End loading
-    }
-  };
 
 
 
@@ -447,32 +251,10 @@ const decodedToken = jwtDecode(token);
   const handleViewClick = async () => {
 
 
-    if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-      toast.error('Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
 
-    if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-      toast.error('Date From is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
 
-    if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-      toast.error('Date To is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+
+
 
     if (selectedValues.division === '' || selectedValues.division == null) {
       toast.error('Division is Mandatory', {
@@ -483,8 +265,8 @@ const decodedToken = jwtDecode(token);
       return;
     }
 
-    if (selectedValues.order === '' || selectedValues.order == null) {
-      toast.error('Order Type is Mandatory', {
+    if (selectedValues.material === '' || selectedValues.material == null) {
+      toast.error('Material Type is Mandatory', {
         position: "top-center",
         autoClose: 1000,
         progress: undefined,
@@ -492,8 +274,8 @@ const decodedToken = jwtDecode(token);
       return;
     }
 
-    if (selectedValues.activity === '' || selectedValues.activity == null) {
-      toast.error('Activity Type is Mandatory', {
+    if (selectedValues.sno === '' || selectedValues.sno == null) {
+      toast.error('Serial No is Mandatory', {
         position: "top-center",
         autoClose: 1000,
         progress: undefined,
@@ -501,8 +283,8 @@ const decodedToken = jwtDecode(token);
       return;
     }
 
-    if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-      toast.error('ZDIN not available for Loose Case Type', {
+    if (selectedValues.remarks === '' || selectedValues.remarks == null) {
+      toast.error('Remarks is Mandatory', {
         position: "top-center",
         autoClose: 1000,
         progress: undefined,
@@ -510,51 +292,36 @@ const decodedToken = jwtDecode(token);
       return;
     }
 
-    const dateFrom = new Date(selectedValues.datefrom);
-    const dateTo = new Date(selectedValues.dateTo);
-
-    if (dateFrom > dateTo) {
-      toast.error('Date From should be less than Date To', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
 
 
 
     const token = sessionStorage.getItem('authToken');
     const decodedToken = jwtDecode(token);
-
-    let pageNumber = 1;
-    const pageSize = 50;
-
+    const processingToastId = toast.loading('Processing... Please wait', {
+      position: "top-center",
+    });
     try {
       setLoader(true); // Show loader initially
       setData([]); // Clear previous data before starting new fetch
-      // Show a "processing" toast before starting the API call
-      const processingToastId = toast.loading('Processing... Please wait', {
-        position: "top-center",
-      });
+  
 
 
-      while (true) {
         const response = await axios.post(
-          PHOTOUPLOAD_URL,
+          UPLOAD_DAMAGE_MATERIAL_DATA,
           {
-            userId: decodedToken.userId,
-            pageNumber: pageNumber,
-            caseType: selectedValues.caseType,
-            division: selectedValues.division,
-            orderType: selectedValues.order,
-            activityType: selectedValues.activity,
-            dateFrom: selectedValues.datefrom,
-            dateTo: selectedValues.dateTo,
 
-            orderNo: selectedValues.orderno,
-            ca: selectedValues.caNo,
-            installerId: selectedValues.installername,
+
+            userId: decodedToken.userId,
+            division: selectedValues.division,
+            subdivision:'',
+            materialType: selectedValues.material,
+            serialNo: selectedValues.sno,
+            remark: selectedValues.remarks,
+            punchBy: decodedToken.userId,
+            entryDate: moment().toISOString() // Use moment to get the current date and time in ISO format
+
+
+        
           },
           {
             headers: {
@@ -564,72 +331,26 @@ const decodedToken = jwtDecode(token);
         );
 
         if (response.data && response.status === 200) {
-          const fetchedData = response.data.orderList;
-
-          if (fetchedData.length === 0 && pageNumber === 1) {
-            // toast.error('No Data Found', {
-            //   position: "top-center",
-            //   autoClose: 1000,
-            //   progress: undefined,
-            // });
-            console.log("test1121")
+         
             toast.update(processingToastId, {
-              render: 'No Data Found',
-              type: "error",
+              render: 'Damage Material Uploaded',
+              type: "success",
               isLoading: false,
               autoClose: 1000,
             });
+            setSelectedValues({
+              division: '',
+              material:'',
+              sno:'',
+              remarks:''          
+            })
             setLoader(false);
             return;
           }
 
-          setData((prevData) => [...prevData, ...fetchedData]); // Append new data to the existing data
 
-          // Stop the loader after the first batch of data is fetched
-          if (pageNumber === 1) {
-            setLoader(false);
-          }
-
-          // If the fetched data size is less than the page size, no need to fetch more
-          if (fetchedData.length < pageSize) {
-            break;
-          }
-
-          pageNumber++; // Increment page number for next fetch
-        }
-        else if (response.status == 400 && response.status.message) {
-
-          // Successfully fetched all data
-          toast.update(processingToastId, {
-            render: 'Data fetched successfully',
-            type: "success",
-            isLoading: false,
-            autoClose: 1000,
-          });
-          return
-        }
-        else {
-
-          toast.update(processingToastId, {
-            render: 'Error fetching data',
-            type: "error",
-            isLoading: false,
-            autoClose: 1000,
-          });
-
-          // If an error or no data in the response, stop fetching
-          setLoader(false);
-          break;
-        }
-      }
-
-      // Successfully fetched all data
-      toast.update(processingToastId, {
-        render: 'Data fetched successfully',
-        type: "success",
-        isLoading: false,
-        autoClose: 1000,
-      });
+       
+  
 
     } catch (error) {
       // Handle errors
@@ -649,340 +370,6 @@ const decodedToken = jwtDecode(token);
 
 
 
-  const [order, setOrder] = useState('asc')
-  const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [orderBy, setOrderBy] = useState('Name') // Changed from `orderBy2` to `orderBy`
-
-  // for testing-start
-  // const totalPages = Math.ceil(tableExample2.length / rowsPerPage)
-  const totalPages = Math.ceil(data.length / rowsPerPage)
-
-  const handleSort = (property) => {
-    const isAsc = orderBy === property && order === 'asc'
-    setOrder(isAsc ? 'desc' : 'asc')
-    setOrderBy(property)
-  }
-
-  // const filteredData = tableExample2.filter((item) => {
-
-  //   const lowercasedSearchTerm = searchTerm.toLowerCase()
-  //   return (
-  //     item.Name.toLowerCase().includes(lowercasedSearchTerm) ||
-  //     item.CANo.toLowerCase().includes(lowercasedSearchTerm) ||
-  //     item.Division.toLowerCase().includes(lowercasedSearchTerm) ||
-  //     item.OrderType.toLowerCase().includes(lowercasedSearchTerm)
-  //   )
-  // })
-
-  const filteredData = data.filter((item) => {
-
-    const lowercasedSearchTerm = searchTerm.toLowerCase()
-    return (
-      item.caseType.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.division.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.orderId.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.caNo.toLowerCase().includes(lowercasedSearchTerm)
-    )
-  })
-
-  const sortedAndFilteredData = filteredData.slice().sort((a, b) => {
-    if (orderBy === 'caseType') {
-      return order === 'asc' ? a.caseType.localeCompare(b.caseType) : b.caseType.localeCompare(a.caseType)
-    } else if (orderBy === 'division') {
-      return order === 'asc' ? a.division.localeCompare(b.ca) : b.division.localeCompare(a.ca)
-    } else if (orderBy === 'orderId') {
-      return order === 'asc'
-        ? a.orderId.localeCompare(b.orderId)
-        : b.orderId.localeCompare(a.orderId)
-    } else if (orderBy === 'caNo') {
-      return order === 'asc'
-        ? a.caNo.localeCompare(b.caNo)
-        : b.caNo.localeCompare(a.caNo)
-    }
-    return 0
-  })
-  // const sortedAndFilteredData = filteredData.slice().sort((a, b) => {
-  //   if (orderBy === 'Name') {
-  //     return order === 'asc' ? a.Name.localeCompare(b.Name) : b.Name.localeCompare(a.Name)
-  //   } else if (orderBy === 'CANo') {
-  //     return order === 'asc' ? a.CANo.localeCompare(b.CANo) : b.CANo.localeCompare(a.CANo)
-  //   } else if (orderBy === 'OrderType') {
-  //     return order === 'asc'
-  //       ? a.OrderType.localeCompare(b.OrderType)
-  //       : b.OrderType.localeCompare(a.OrderType)
-  //   } else if (orderBy === 'Division') {
-  //     return order === 'asc'
-  //       ? a.Division.localeCompare(b.Division)
-  //       : b.Division.localeCompare(a.Division)
-  //   }
-  //   return 0
-  // })
-
-  const paginatedData = sortedAndFilteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-
-  //for testing-end
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage)
-    }
-  }
-
-  // Calculate the page numbers to be displayed
-  const getPageNumbers = () => {
-    const pageNumbers = []
-    const start = Math.max(1, page - 1)
-    const end = Math.min(totalPages, page + 1)
-
-    for (let i = start; i <= end; i++) {
-      pageNumbers.push(i)
-    }
-
-    return pageNumbers
-  }
-  const isNextButtonDisabled = paginatedData.length < rowsPerPage && page === totalPages;
-
-  //test
-
-  const images = [
-    { id: 1, src: 'https://via.placeholder.com/150/0000FF/808080?text=Image+1', title: 'Image 1' },
-    { id: 2, src: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Image+2', title: 'Image 2' },
-    { id: 3, src: 'https://via.placeholder.com/150/00FF00/000000?text=Image+3', title: 'Image 3' },
-    { id: 4, src: 'https://via.placeholder.com/150/FFFF00/000000?text=Image+4', title: 'Image 4' },
-    { id: 5, src: 'https://via.placeholder.com/150/FF00FF/FFFFFF?text=Image+5', title: 'Image 5' },
-  ];
-  // State to manage selected image
-  // const [selectedImage, setSelectedImage] = useState(images[0]);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-
-  console.log("test::::123:::", selectedItem)
-  // useEffect(() => {
-
-  //   selectedImage
-
-
-
-  // }, [selectedItem])
-
-
-
-
-  const [token, setToken] = useState(null);
-  const [cookie, setCookie] = useState(null);
-
-  const [error, setError] = useState(null);
-
-
-
-  const [mamsImages, setMamsImages] = useState([]);
-
-
-  const mapDataToImages = (data) => {
-    return [
-      { id: 1, src: data.cancelImageDocId, title: 'Cancel Image' },
-      { id: 2, src: data.cancellationNoticeDocId, title: 'Cancellation Notice Image' },
-      { id: 3, src: data.labTestingDocId, title: 'Lab Testing Image' },
-      { id: 4, src: data.labTestingNoticeDocId, title: 'Lab Testing Notice Image' },
-      { id: 5, src: data.mcrImageDocId, title: 'MCR Image' },
-      { id: 6, src: data.meterAfterActivityDocId, title: 'Meter After Activity Image' },
-      { id: 7, src: data.meterBeforeActivityDocId, title: 'Meter Before Activity Image' },
-      { id: 8, src: data.nearbyMtr1DocId, title: 'Nearby Meter 1 Image' },
-      { id: 9, src: data.nearbyMtr2DocId, title: 'Nearby Meter 2 Image' },
-      { id: 10, src: data.newMeterDocId, title: 'New Meter Image' },
-      { id: 11, src: data.oldMeterGunnyDocId, title: 'Gunny bag Image' },
-      { id: 12, src: data.oldMeterReadingDocId, title: 'Old Meter Image' },
-      { id: 13, src: data.poleBusbarDocId, title: 'Pole Busbar Image' },
-    ].filter(image => image.src); // Filter out images with empty src
-  };
-
-  // const handleImageClick = async (image) => {
-  //   if (image.src) {
-  //     // Fetch base64 image
-  //     const base64Image = await fetchBase64Image(image.src);
-
-  //     if (base64Image) {
-  //       // Update the selected image with the base64 data
-  //       setSelectedImage({
-  //         ...image,
-  //         src: `data:image/png;base64,${base64Image}`, // Assuming the image is PNG, adjust accordingly
-  //       });
-  //     }
-  //   }
-  // };
-
-  const handleImageClick = async (image) => {
-    console.log("actual img:::",image)
-    if (image.src.startsWith('data:image')) {
-      // Image already has base64 data, just set it as selected
-      setSelectedImage(image);
-    } else if (image.src) {
-      // Fetch base64 image if not already fetched
-console.log("test::::::img",image)
-console.log("test::::::img_src",image.src)
-
-      const base64Image = await fetchBase64Image(image.src);
-
-      if (base64Image) {
-        const updatedImage = {
-          ...image,
-          src: `data:image/png;base64,${base64Image}`, // Assuming the image is PNG, adjust accordingly
-        };
-        setSelectedImage(updatedImage);
-
-        // Update mamsImages with the new base64 data to avoid future API calls
-        setMamsImages((prevImages) =>
-          prevImages.map((img) => (img.id === image.id ? updatedImage : img))
-        );
-      }
-    }
-  };
-
-
-  const handleButtonClick = async (item) => {
-    // Map the data to the mamsImages format
-    const images = mapDataToImages(item);
-    console.log("item---test::::::----", item)
-    setMamsImages(images);
-
-    // Optionally set the first image as selected and fetch the base64 data
-    if (images.length > 0) {
-      await handleImageClick(images[0]);
-    }
-
-    setImageGallery(true);
-  };
-  // const handleButtonClick = (item) => {
-  //   // Map the data to the mamsImages format
-  //   const images = mapDataToImages(item);
-  //   console.log("item---test::::::----", item)
-  //   setMamsImages(images);
-  //   setSelectedImage(images[0]); 
-  //   console.log("item---test::++++++++++++::::----", images[0])
-
-  //   // Optionally set the first image as selected
-  //   setImageGallery(true);
-  // };
-
-  const fetchBase64Image = async (docId) => {
-    try {
-      const toastId = toast.info('Fetching image...', {
-        autoClose: false, // Keep the toast open until it's manually closed
-      });
-      const response = await axios.post(DMS_BASE64_URL,
-        {
-          TokenKey: `${token}`,
-          Cookiee: `${cookie}`,
-          DocumentID: `${docId}`
-        }
-
-      );
-      // Success toast
-      toast.update(toastId, {
-        render: 'Image fetched successfully!',
-        type: 'success',
-        autoClose: 5000, // Auto close after 5 seconds
-      });
-      return response.data.Result;
-    } catch (error) {
-      console.error('Error fetching base64 image:', error);
-      // Error toast
-      toast.update(toastId, {
-        render: 'Error fetching image!',
-        type: 'error',
-        autoClose: 5000, // Auto close after 5 seconds
-      });
-
-      return null;
-    }
-  };
-
-
-  // const downloadImage = (src) => {
-  //   // Function to handle image download
-  //   console.log('Download image:', src);
-  // };
-
-  // const downloadAllImages = () => {
-  //   // Function to handle downloading all images
-  //   console.log('Download all images');
-  // };
-
-
-  ///earlier code:::::
-  // const downloadImage = (src) => {
-  //   const link = document.createElement('a');
-  //   link.href = src;
-  //   link.download = 'image.png';
-  //   link.click();
-  // };
-
-  // const downloadAllImages = () => {
-  //   mamsImages.forEach(image => {
-  //     if (image.src.startsWith('data:image')) {
-  //       downloadImage(image.src);
-  //     }
-  //   });
-  // };
-
-
-  const downloadImage = (src, filename) => {
-    const link = document.createElement('a');
-    link.href = src;
-    link.download = filename;
-    link.click();
-  };
-
-  const downloadAllImages = () => {
-    mamsImages.forEach(image => {
-      if (image.src.startsWith('data:image')) {
-        // Generate filename based on the image title, or default to 'image.png'
-        const filename = image.title ? `${image.title}.png` : 'image.png';
-        downloadImage(image.src, filename);
-      }
-    });
-  };
-
-
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        // Make the POST request with axios
-        const response = await axios.post(
-          DMS_TOKEN_URL,
-          {
-            Key: "!@B$E$#RK@!",
-            KeySource: "RAKSHAK",
-            Application: "Raskshak"
-          }
-        );
-        if (response.status == 200) {
-          // Handle the response data
-          console.log("test:::::::::++++++++++", response.data)
-
-          setToken(response.data.Key);
-          setCookie(response.data.Result);
-        }
-
-      } catch (err) {
-        // Handle any errors
-        // setError(err.message);
-      }
-    };
-
-
-
-    fetchToken();
-  }, []);
-
-
-  const handleClose = () => {
-    setMamsImages([]); // Clear images data
-    setSelectedImage(null); // Clear selected image
-    setImageGallery(false); // Close the modal
-  };
 
 
 
@@ -996,107 +383,7 @@ console.log("test::::::img_src",image.src)
       />
 
 
-      <CModal
-        size="lg"
-        visible={imageGallery}
-        // onClose={() => setImageGallery(false)}
-        onClose={() => handleClose()}
-        aria-labelledby="imageGalleryModal"
-      >
-        <CModalHeader closeButton>
-          <CModalTitle id="imageGalleryModal" className="text-center w-100">Image Gallery</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CRow>
-            <CCol xs={4}>
-              <CListGroup>
-                {mamsImages.map((image) => (
-                  <CListGroupItem
-                    key={image.id}
-                    action
-                    active={image.id === (selectedImage?.id || -1)}
-                    // onClick={() => setSelectedImage(image)}
-                    onClick={() => handleImageClick(image)} // Update click handler here
-                  >
-                    {image.title}
-                  </CListGroupItem>
-                ))}
-              </CListGroup>
-            </CCol>
-            <CCol xs={8}>
-              {/* {selectedImage && (
-                <div className="text-center">
-                  <h5 >{selectedImage.title}</h5>
-                  <CImage src={selectedImage.src} alt={selectedImage.title} fluid />
-                  <CButton color="primary" 
-                  onClick={() => downloadImage(selectedImage.src,selectedImage.title)}
-                  >
-                    Download
-                  </CButton>
-                  <CButton color="secondary" 
-                 
-                  onClick={() => {
-                    console.log('Selected Image Src:', selectedImage?.src); // Debugging
-                    if (selectedImage?.src) {
-                      window.open(selectedImage.src, '_blank');
-                    } else {
-                      console.error('Selected image source is missing or invalid.');
-                    }
-                  }}
-                  >
-                    View
-                  </CButton>
-                </div>
-              )} */}
-
-
-              {selectedImage && (
-                <div>
-                  {/* Row for title and buttons */}
-                  <CRow className="align-items-center mb-3">
-                    <CCol xs={12} md={6} className="d-flex align-items-center">
-                      <h5 className="mb-0">{selectedImage.title}</h5>
-                    </CCol>
-                    <CCol xs={12} md={6} className="d-flex justify-content-end">
-                      <CButton color="primary" onClick={() => downloadImage(selectedImage.src, selectedImage.title)}>
-                        <IoMdDownload className="me-2" />Download
-                      </CButton>
-                      {/* <CButton color="secondary" className="ms-2" onClick={() => {
-                          console.log('Selected Image Src:', selectedImage?.src); // Debugging
-                          if (selectedImage?.src) {
-                            window.open(selectedImage.src, '_blank');
-                          } else {
-                            console.error('Selected image source is missing or invalid.');
-                          }
-                        }}>
-                          View
-                        </CButton> */}
-                    </CCol>
-                  </CRow>
-                  {/* Row for image */}
-                  <CRow>
-                    <CCol xs={12}>
-                      <CImage src={selectedImage.src} alt={selectedImage.title} fluid />
-                    </CCol>
-                  </CRow>
-                </div>
-              )}
-            </CCol>
-          </CRow>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="primary" onClick={downloadAllImages}>
-            Download All
-          </CButton>
-          <CButton color="secondary"
-            // onClick={() => setImageGallery(false)}
-            onClick={() => handleClose()}
-          >
-            Close
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
+  
 
 
 
@@ -1160,14 +447,14 @@ console.log("test::::::img_src",image.src)
                   //   padding: '0.25rem 0.5rem', // Reduced padding
                   //   fontSize: '0.875rem', // Adjust font size as needed
                   // }}
-                  value={selectedValues.division} // Bind to state
-                  onChange={(event) => handleChange(event, 'division')}
+                  value={selectedValues.material} // Bind to state
+                  onChange={(event) => handleChange(event, 'material')}
                   className="custom-form-select" // Use the custom class
                 >
                   <option>Open this select menu</option>
-                  {divisions.map((division) => (
-                    <option key={division.divCode} value={division.divCode}>
-                      {division.divName}
+                  {materials.map((material) => (
+                    <option key={material.id} value={material.id}>
+                      {material.label}
                     </option>
                   ))}
 
@@ -1190,14 +477,10 @@ console.log("test::::::img_src",image.src)
                   placeholder="Enter Serial No"
                   className="custom-form-select"
 
-                  value={selectedValues.caNo} // Bind to state
+                  value={selectedValues.sno} // Bind to state
                   // onChange={(event) => handleChange(event, 'caNo')}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    // Remove any non-digit characters and limit to 10 digits
-                    const filteredValue = value.replace(/\D/g, '').slice(0, 9);
-                    handleChange({ target: { value: filteredValue } }, 'caNo');
-                  }}
+                  onChange={(event) => handleChange(event, 'sno')}
+
                />
               </CCol>
            
@@ -1213,12 +496,12 @@ console.log("test::::::img_src",image.src)
                       <span style={textSmallStyle}>Remark</span>
                     </>
                   }
-                  placeholder="Enter Installer Id"
+                  placeholder="Enter remarks"
                   className="custom-form-select"
 
 
-                  value={selectedValues.installername} // Bind to state
-                  onChange={(event) => handleChange(event, 'installername')}
+                  value={selectedValues.remarks} // Bind to state
+                  onChange={(event) => handleChange(event, 'remarks')}
 
                 />
               </CCol>

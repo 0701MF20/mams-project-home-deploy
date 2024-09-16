@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import CIcon from '@coreui/icons-react'
 
 import {
+    CAlert,
     CModal,
     CModalFooter,
     CModalHeader,
@@ -33,6 +34,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 // import { ToastContainer, toast } from 'react-toastify';
 import {
+    cilCheckCircle,
     // cisLockUnlocked,
     // cil-lock-unlocked,
     cilArrowLeft,
@@ -73,16 +75,17 @@ import {
 // import toast, { Toaster } from 'react-hot-toast';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios'
+import axios, { Axios } from 'axios'
 import '../../../scss/custom-coreui.scss'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import moment from 'moment'
 import { TextField } from '@mui/material';
-import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
+import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL, UPLOAD_NON_TAB_DATA } from '../../../utils/ConstantURL'
 import { IoMdDownload } from "react-icons/io";
 import { useSelector } from 'react-redux'
+import { generateDocumentId } from '../../../utils/functions';
 
 
 
@@ -115,8 +118,6 @@ const UploadPhotoNonTab = () => {
     const [loader, setLoader] = useState(false)
 
 
-
-
     const [selectedValues, setSelectedValues] = useState({
         division: '',
         order: '',
@@ -125,10 +126,48 @@ const UploadPhotoNonTab = () => {
         caNo: '',
         orderno: '',
         datefrom: null,
-        dateTo: null,
+        // dateTo: null,
         caseType: '',
-        meterno: ''
+        meterno: '',
+        newMtrImg: '',
+        poleBBCblImg: '',
+        oldMtrReadImg: '',
+        OldMtrGunnyImg: '',
+        mtrBefActImg: '',
+        mtrAfterActImg: '',
+        mcrImg: '',
+        labNtcImg: '',
+        cancelNtcImg: '',
+        linemanId: ''
+
     });
+
+
+    const [selectedImages, setSelectedImages] = useState({
+        // newMtrImg: '',
+        // poleBBCblImg: '',
+        // oldMtrReadImg: '',
+        // OldMtrGunnyImg: '',
+        // mtrBefActImg: '',
+        // mtrAfterActImg: '',
+        // mcrImg: '',
+        // labNtcImg: '',
+        // cancelNtcImg: ''
+    });
+
+
+    // const [selectedValues, setSelectedValues] = useState({
+    //     division: '',
+    //     order: '',
+    //     activity: '',
+    //     installername: '',
+    //     caNo: '',
+    //     orderno: '',
+    //     datefrom: null,
+    //     dateTo: null,
+    //     caseType: '',
+    //     meterno: ''
+    // });
 
     const handleChange = (event, type) => {
         setSelectedValues(prevValues => ({
@@ -184,7 +223,7 @@ const UploadPhotoNonTab = () => {
                 console.log(divs);
 
                 const response = await axios.post(DIVISION_URL, {
-                    id: '41007656',
+                    id: decodedToken.userId,
                     divisionIds: `${divs}`
                 }, {
                     headers: {
@@ -278,411 +317,40 @@ const UploadPhotoNonTab = () => {
     }, [selectedValues.order]);
 
 
-
-
-
-    const handleExcelClick = async () => {
-        if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-            toast.error('Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-            toast.error('Date From is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-            toast.error('Date To is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-        if (selectedValues.division === '' || selectedValues.division == null) {
-            toast.error('Division is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-        if (selectedValues.order === '' || selectedValues.order == null) {
-            toast.error('Order Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.activity === '' || selectedValues.activity == null) {
-            toast.error('Activity Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-
-        if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-
-            toast.error('ZDIN not allowed in loose case', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            })
-            return;
-        }
-
-        const dateFrom = new Date(selectedValues.datefrom);
-        const dateTo = new Date(selectedValues.dateTo);
-
-        if (dateFrom > dateTo) {
-            toast.error('Date From should be less than Date To', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-
-        // Fetch the first page of data
-        const processingToastId = toast.loading('Processing... Please wait', {
-            position: "top-center",
-        });
-
-
-        const token = sessionStorage.getItem('authToken');
-
-        const decodedToken = jwtDecode(token);
-        console.log('Decoded Token:', decodedToken);
-
-        const requestPayload = {
-            userId: decodedToken.userId,
-            pageNumber: 1,
-            caseType: selectedValues.caseType,
-            division: selectedValues.division,
-            orderType: selectedValues.order,
-            activityType: selectedValues.activity,
-            dateFrom: selectedValues.datefrom,
-            dateTo: selectedValues.dateTo,
-            orderNo: selectedValues.orderno,
-            ca: selectedValues.caNo,
-            installerId: selectedValues.installername
-        };
-
-        try {
-            setLoader(true);
-
-            const response = await axios.post(PHOTOUPLOADEXCEL_URL, requestPayload, {
-                responseType: 'blob', // Ensure the response is handled as a blob
-                headers: {
-                    Authorization: `Bearer ${token}`, // Include token in Authorization header
-                }
-            });
-
-            // Check for successful response and headers
-            if (response.status === 200) {
-                // Create a URL for the Blob
-                const url = window.URL.createObjectURL(new Blob([response.data], { type: response.headers['content-type'] }));
-
-                // Extract the filename from the content-disposition header
-                const contentDisposition = response.headers['content-disposition'];
-                const filename = contentDisposition ? contentDisposition.split('filename=')[1].split(';')[0].replace(/"/g, '') : 'data.xlsx';
-
-                // Create a link element and click it to trigger the download
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', filename); // Set the filename
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-
-                // Clean up the URL object
-                window.URL.revokeObjectURL(url);
-
-                // Optional: Inform the user that the file was downloaded
-                toast.success('File downloaded successfully!', {
-                    position: "top-center",
-                    autoClose: 1000,
-                    progress: undefined,
-                });
-            } else {
-                throw new Error('Unexpected response status');
-            }
-        } catch (error) {
-
-
-            // Handle errors
-            // console.error('Error during file download:', error);
-            // toast.error('Error fetching data', {
-            //   position: "top-center",
-            //   autoClose: 1000,
-            //   progress: undefined,
-            // });
-            if (error.response) {
-                // The server responded with a status code different from 2xx
-                if (error.response.status === 404) {
-                    // Handle "No Content" scenario
-                    console.log('No data found.');
-
-                    toast.update(processingToastId, {
-                        render: `No Data Found`,
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 1000,
-                    });
-                } else if (error.response.status === 500) {
-                    // Handle server errors
-                    console.error('Server error occurred:', error.response.data);
-                    toast.update(processingToastId, {
-                        render: `Error:${error}`,
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 1000,
-                    });
-
-                } else {
-                    // Handle other HTTP status codes
-                    console.error('Request failed with status code:', error.response.status);
-                    toast.update(processingToastId, {
-                        render: `Error:${error}`,
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 1000,
-                    });
-                }
-            } else {
-                // Handle network or other errors
-                console.error('An error occurred:', error.message);
-            }
-
-
-
-
-
-        } finally {
-            setLoader(false); // End loading
-        }
+    const imageFieldMappings = {
+        newMtrImg: "New Meter Photograph With Background",
+        poleBBCblImg: "PoleBusbar End Cable Connection",
+        oldMtrReadImg: "Old Meter Photograph with Reading",
+        OldMtrGunnyImg: "Old Meter Photograph With Gunny Bag",
+        mtrBefActImg: "Meter Photograph with Background Before Activity",
+        mtrAfterActImg: "Meter Photograph With Background After Activity",
+        mcrImg: "MCR Photograph",
+        labNtcImg: "Lab Notice Photograph",
+        cancelNtcImg: "Cancellation Notice Photograph",
     };
 
 
 
+    const [imageFields, setImageFields] = useState({});
 
+    // Function to create and set imageFields
+    const logImageFields = () => {
+        const updatedImageFields = Object.keys(imageFieldMappings).reduce((acc, field) => {
+            acc[field] = selectedImages[imageFieldMappings[field]] ?? ''; // Use nullish coalescing to handle undefined values
+            return acc;
+        }, {});
 
-
-    const handleViewClick = async () => {
-
-
-        if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-            toast.error('Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-            toast.error('Date From is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-            toast.error('Date To is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.division === '' || selectedValues.division == null) {
-            toast.error('Division is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.order === '' || selectedValues.order == null) {
-            toast.error('Order Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.activity === '' || selectedValues.activity == null) {
-            toast.error('Activity Type is Mandatory', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-            toast.error('ZDIN not available for Loose Case Type', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-        const dateFrom = new Date(selectedValues.datefrom);
-        const dateTo = new Date(selectedValues.dateTo);
-
-        if (dateFrom > dateTo) {
-            toast.error('Date From should be less than Date To', {
-                position: "top-center",
-                autoClose: 1000,
-                progress: undefined,
-            });
-            return;
-        }
-
-
-
-        const token = sessionStorage.getItem('authToken');
-        const decodedToken = jwtDecode(token);
-
-        let pageNumber = 1;
-        const pageSize = 50;
-
-        try {
-            setLoader(true); // Show loader initially
-            setData([]); // Clear previous data before starting new fetch
-            // Show a "processing" toast before starting the API call
-            const processingToastId = toast.loading('Processing... Please wait', {
-                position: "top-center",
-            });
-
-
-            while (true) {
-                const response = await axios.post(
-                    PHOTOUPLOAD_URL,
-                    {
-                        userId: decodedToken.userId,
-                        pageNumber: pageNumber,
-                        caseType: selectedValues.caseType,
-                        division: selectedValues.division,
-                        orderType: selectedValues.order,
-                        activityType: selectedValues.activity,
-                        dateFrom: selectedValues.datefrom,
-                        dateTo: selectedValues.dateTo,
-
-                        orderNo: selectedValues.orderno,
-                        ca: selectedValues.caNo,
-                        installerId: selectedValues.installername,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`, // Include token in Authorization header
-                        },
-                    }
-                );
-
-                if (response.data && response.status === 200) {
-                    const fetchedData = response.data.orderList;
-
-                    if (fetchedData.length === 0 && pageNumber === 1) {
-                        // toast.error('No Data Found', {
-                        //   position: "top-center",
-                        //   autoClose: 1000,
-                        //   progress: undefined,
-                        // });
-                        console.log("test1121")
-                        toast.update(processingToastId, {
-                            render: 'No Data Found',
-                            type: "error",
-                            isLoading: false,
-                            autoClose: 1000,
-                        });
-                        setLoader(false);
-                        return;
-                    }
-
-                    setData((prevData) => [...prevData, ...fetchedData]); // Append new data to the existing data
-
-                    // Stop the loader after the first batch of data is fetched
-                    if (pageNumber === 1) {
-                        setLoader(false);
-                    }
-
-                    // If the fetched data size is less than the page size, no need to fetch more
-                    if (fetchedData.length < pageSize) {
-                        break;
-                    }
-
-                    pageNumber++; // Increment page number for next fetch
-                }
-                else if (response.status == 400 && response.status.message) {
-
-                    // Successfully fetched all data
-                    toast.update(processingToastId, {
-                        render: 'Data fetched successfully',
-                        type: "success",
-                        isLoading: false,
-                        autoClose: 1000,
-                    });
-                    return
-                }
-                else {
-
-                    toast.update(processingToastId, {
-                        render: 'Error fetching data',
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 1000,
-                    });
-
-                    // If an error or no data in the response, stop fetching
-                    setLoader(false);
-                    break;
-                }
-            }
-
-            // Successfully fetched all data
-            toast.update(processingToastId, {
-                render: 'Data fetched successfully',
-                type: "success",
-                isLoading: false,
-                autoClose: 1000,
-            });
-
-        } catch (error) {
-            // Handle errors
-
-            toast.update(processingToastId, {
-                render: 'Error fetching data',
-                type: "error",
-                isLoading: false,
-                autoClose: 1000,
-            });
-            console.error("Error fetching data:", error);
-            setLoader(false);
-        }
+        setImageFields(updatedImageFields);
+        console.log("Image Fields:", updatedImageFields);
     };
+
+    // Call the function whenever selectedImages change
+    useEffect(() => {
+        logImageFields();
+    }, [selectedImages]);
+
+
+
 
 
 
@@ -808,8 +476,8 @@ const UploadPhotoNonTab = () => {
 
 
 
-    const [token, setToken] = useState(null);
-    const [cookie, setCookie] = useState(null);
+    const [token, setToken] = useState('');
+    const [cookie, setCookie] = useState('');
 
     const [error, setError] = useState(null);
 
@@ -906,14 +574,24 @@ const UploadPhotoNonTab = () => {
 
     const fetchBase64Image = async (docId) => {
         try {
+
+            const tokeni = sessionStorage.getItem('authToken');
+            const decodedToken = jwtDecode(tokeni);
+
             const toastId = toast.info('Fetching image...', {
                 autoClose: false, // Keep the toast open until it's manually closed
             });
             const response = await axios.post(DMS_BASE64_URL,
                 {
+                    userId: decodedToken.userId,
                     TokenKey: `${token}`,
                     Cookiee: `${cookie}`,
                     DocumentID: `${docId}`
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // Include token in Authorization header
+                    },
                 }
 
             );
@@ -988,18 +666,38 @@ const UploadPhotoNonTab = () => {
     useEffect(() => {
         const fetchToken = async () => {
             try {
+
+                const tokeni = sessionStorage.getItem('authToken');
+                const decodedToken = jwtDecode(tokeni);
+                console.log('Decoded Token:', decodedToken);
+
+                const data = {
+                    userId: decodedToken.userId,
+                    key: "!@B$E$#RK@!",
+                    keySource: "RAKSHAK",
+                    application: "Raskshak"
+                }
+                console.log("dfghjkl:", data, decodedToken.userId)
+                console.log("dfghssssssssjkl:", token)
+
                 // Make the POST request with axios
                 const response = await axios.post(
                     DMS_TOKEN_URL,
                     {
-                        Key: "!@B$E$#RK@!",
-                        KeySource: "RAKSHAK",
-                        Application: "Raskshak"
+                        userId: decodedToken.userId,
+                        key: "!@B$E$#RK@!",
+                        keySource: "RAKSHAK",
+                        application: "Raskshak"
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${tokeni}`, // Include token in Authorization header
+                        },
                     }
                 );
                 if (response.status == 200) {
                     // Handle the response data
-                    console.log("test:::::::::++++++++++", response.data)
+                    console.log("test:::::::::++++++++++mmmmmmmmmmmmmmmmmmm", response.data)
 
                     setToken(response.data.Key);
                     setCookie(response.data.Result);
@@ -1035,15 +733,16 @@ const UploadPhotoNonTab = () => {
     const toggleModal = () => {
         setModalVisible(false);
     };
+    const [hoveredCategory, setHoveredCategory] = useState(null); // To track hovered category
 
 
     const imageCategories = [
         'New Meter Photograph With Background',
-        'Pole/Busbar End Cable Connection',
+        'PoleBusbar End Cable Connection',
         'Old Meter Photograph with Reading',
         'Old Meter Photograph With Gunny Bag',
-        'Meter Photograph with Background, Before Activity',
-        'Meter Photograph With Background, After Activity',
+        'Meter Photograph with Background Before Activity',
+        'Meter Photograph With Background After Activity',
         'MCR Photograph',
         'Lab Notice Photograph',
         'Cancellation Notice Photograph',
@@ -1054,49 +753,322 @@ const UploadPhotoNonTab = () => {
         // You can add file input and upload logic here
     };
     console.log("test11111111111", modalVisible)
+
+
+
+
+    // const [selectedImagesB64, setSelectedImagesB64] = useState({
+    //     newMtrImg: '',
+    //     poleBBCblImg: '',
+    //     oldMtrReadImg: '',
+    //     OldMtrGunnyImg: '',
+    //     mtrBefActImg: '',
+    //     mtrAfterActImg: '',
+    //     mcrImg: '',
+    //     labNtcImg: '',
+    //     cancelNtcImg: ''
+    // });
+    console.log("image doc_id:::", selectedImages)
+
+
+    const [uploadStatus, setUploadStatus] = useState({});
+
+    const handleImageUpload = async (category) => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+
+        fileInput.onchange = async () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64String = reader.result.split(',')[1]; // Convert to base64
+                    console.log("base:::", base64String)
+                    // Use category as the file name for the API call
+                    const fileName = category;
+                    console.log("filename:::", fileName)
+                    // Call the API function to upload the image and get the document ID
+                    const documentId = await generateDocumentId(token, cookie, base64String, fileName);
+                    console.log("doc:::", documentId)
+
+                    if (documentId) {
+                        setSelectedImages((prevState) => ({
+                            ...prevState,
+                            [category]: documentId,  // Store the document ID
+                        }));
+
+                        // Mark upload as complete for this category
+                        setUploadStatus((prevState) => ({
+                            ...prevState,
+                            [category]: 'completed'
+                        }));
+                        toast.success(`${fileName} Selected`, {
+                            position: "top-right",
+                            autoClose: 1000,
+                            progress: undefined,
+                        });
+                    } else {
+                        console.error('Upload failed');
+                        toast.success(`Selected Image Upload Failed`, {
+                            position: "top-right",
+                            autoClose: 1000,
+                            progress: undefined,
+                        });
+                    }
+                };
+                reader.readAsDataURL(file); // Convert file to base64 string
+            }
+        };
+
+        fileInput.click();
+    };
+
+    const handleDelete = (category) => {
+        // Reset the document ID and upload status
+        setSelectedImages((prevState) => ({
+            ...prevState,
+            [category]: '', // Clear the document ID
+        }));
+
+        setUploadStatus((prevState) => ({
+            ...prevState,
+            [category]: '', // Clear the upload status
+        }));
+    };
+
+
+
+    console.log("upload stattus:::", uploadStatus)
+
+
+
+    const handleViewClick = async () => {
+
+
+        if (selectedValues.division === '' || selectedValues.division == null) {
+            toast.error('Division is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+        if (selectedValues.caNo === '' || selectedValues.caNo == null) {
+            toast.error('CA No is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+
+        if (selectedValues.orderno === '' || selectedValues.orderno == null) {
+            toast.error('Order No is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+        if (selectedValues.order === '' || selectedValues.order == null) {
+            toast.error('Order Type is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+        if (selectedValues.activity === '' || selectedValues.activity == null) {
+            toast.error('Activity Type is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+        if (selectedValues.meterno === '' || selectedValues.meterno == null) {
+            toast.error('Meter No is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+        if (selectedValues.linemanId === '' || selectedValues.linemanId == null) {
+            toast.error('Lineman Id is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+        if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
+            toast.error('Date is Mandatory', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+
+
+
+
+        const isAnyImageFieldFilled = Object.values(imageFields).some(value => value !== '');
+
+        if (!isAnyImageFieldFilled) {
+            toast.error('At least one image field must be filled', {
+                position: "top-center",
+                autoClose: 1000,
+                progress: undefined,
+            });
+            return;
+        }
+
+
+
+        const tokenI = sessionStorage.getItem('authToken');
+        const decodedToken = jwtDecode(tokenI);
+        // const formattedDateFrom = moment(selectedValues.datefrom).format('YYYY-MM-DD HH:mm:ss'); 
+        // console.log("form",formattedDateFrom)
+        const d = {
+            userId: decodedToken.userId,
+            orderNo: selectedValues.orderno,
+            caNumber: selectedValues.caNo,
+            division: selectedValues.division,
+            subDivision: "",
+            linemanId: selectedValues.linemanId,
+            orderType: selectedValues.order,
+            activityType: selectedValues.activity,
+            punchDate: selectedValues.datefrom,
+            meterNo: selectedValues.meterno,
+            signConImg: "",
+            labTestingNoticeImg: imageFields.labNtcImg,
+            meterAfterActImg: imageFields.mtrAfterActImg,
+            meterBeforeActImg: imageFields.mtrBefActImg,
+            newMeterImg: imageFields.newMtrImg,
+            gunnyBagImg: imageFields.OldMtrGunnyImg,
+            oldMeterReadingImg: imageFields.oldMtrReadImg,
+            poleBusbarImg: imageFields.poleBBCblImg,
+            fileNearbyMtr1Img: "",
+            fileNearbyMtr2Img: "",
+            punchBy: decodedToken.userId
+
+        }
+        console.log("3456rt7y8:::", d)
+
+        try {
+
+            const processingToastId = toast.loading('Processing... Please wait', {
+                position: "top-center",
+            });
+
+
+
+
+            const response = await axios.post(
+                UPLOAD_NON_TAB_DATA,
+                {
+                    userId: decodedToken.userId,
+                    orderNo: selectedValues.orderno,
+                    caNumber: selectedValues.caNo,
+                    division: selectedValues.division,
+                    subDivision: "",
+                    linemanId: selectedValues.linemanId,
+                    orderType: selectedValues.order,
+                    activityType: selectedValues.activity,
+                    punchDate: selectedValues.datefrom,
+                    meterNo: selectedValues.meterno,
+                    signConImg: "",
+                    labTestingNoticeImg: imageFields.labNtcImg,
+                    meterAfterActImg: imageFields.mtrAfterActImg,
+                    meterBeforeActImg: imageFields.mtrBefActImg,
+                    newMeterImg: imageFields.newMtrImg,
+                    gunnyBagImg: imageFields.OldMtrGunnyImg,
+                    oldMeterReadingImg: imageFields.oldMtrReadImg,
+                    poleBusbarImg: imageFields.poleBBCblImg,
+                    fileNearbyMtr1Img: "",
+                    fileNearbyMtr2Img: "",
+                    punchBy: decodedToken.userId
+
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokenI}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+
+                toast.update(processingToastId, {
+                    render: 'Non-Data Uploaded',
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 1000,
+                });
+                setImageFields({})
+                setUploadStatus({});
+                setSelectedImage({})
+                setSelectedValues({
+                    division: '',
+                    order: '',
+                    activity: '',
+                    installername: '',
+                    caNo: '',
+                    orderno: '',
+                    datefrom: null,
+                    // dateTo: null,
+                    caseType: '',
+                    meterno: '',
+                    newMtrImg: '',
+                    poleBBCblImg: '',
+                    oldMtrReadImg: '',
+                    OldMtrGunnyImg: '',
+                    mtrBefActImg: '',
+                    mtrAfterActImg: '',
+                    mcrImg: '',
+                    labNtcImg: '',
+                    cancelNtcImg: '',
+                    linemanId: ''
+                }
+                )
+            }
+
+
+
+
+        } catch (error) {
+            // Handle errors
+
+            toast.update(processingToastId, {
+                render: 'Error fetching data',
+                type: "error",
+                isLoading: false,
+                autoClose: 1000,
+            });
+            console.error("Error fetching data:", error);
+            setLoader(false);
+        }
+    };
+
+
     return (
         <CRow>
             <ToastContainer
             />
 
-            {/* new addition 1 */}
+
+
             {/* <CModal
-                // size="lg"
-                backdrop="static"
-                visible={modalVisible}
-                onClose={() => setModalVisible(!modalVisible)}
-            >
-                <CModalHeader
-                    // onClose={toggleModal}
-                    onClose={() => setModalVisible(!modalVisible)}
-
-                >
-                    <strong>Upload Images</strong>
-                </CModalHeader>
-                <CModalBody>
-                    <CListGroup>
-                        {imageCategories.map((category, index) => (
-                            <CListGroupItem key={index} className="d-flex justify-content-between align-items-center">
-                                {category}
-                                <CButton color="primary" variant="outline" onClick={() => handleUploadClick(category)}>
-                                    <CIcon icon={cilCloudUpload} />
-                                </CButton>
-                            </CListGroupItem>
-                        ))}
-                    </CListGroup>
-                </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary"
-                        // onClick={toggleModal}
-                        onClose={() => setModalVisible(!modalVisible)}
-
-                    >
-                        Cancel
-                    </CButton>
-                </CModalFooter>
-            </CModal> */}
-
-            <CModal
                 backdrop="static"
                 visible={modalVisible}
                 onClose={() => toggleModal()}
@@ -1109,9 +1081,19 @@ const UploadPhotoNonTab = () => {
                         {imageCategories.map((category, index) => (
                             <CListGroupItem key={index} className="d-flex justify-content-between align-items-center">
                                 {category}
-                                <CButton color="primary" variant="outline" onClick={() => handleUploadClick(category)}>
+                           
+                                  <CButton
+                                color="primary"
+                                variant="outline"
+                                onClick={() => handleImageUpload(category)}
+                                disabled={uploadStatus[category] === 'completed'}
+                            >
+                                {uploadStatus[category] === 'completed' ? (
+                                    <CIcon icon={cilCheckCircle} />
+                                ) : (
                                     <CIcon icon={cilCloudUpload} />
-                                </CButton>
+                                )}
+                            </CButton>
                             </CListGroupItem>
                         ))}
                     </CListGroup>
@@ -1121,8 +1103,97 @@ const UploadPhotoNonTab = () => {
                         Cancel
                     </CButton>
                 </CModalFooter>
-            </CModal>
+            </CModal> */}
 
+            <CModal backdrop="static" visible={modalVisible}
+                onClose={() =>
+                    toggleModal()
+
+                }
+
+            >
+                <CModalHeader onClose={() => toggleModal()}>
+                    <strong>Upload Images</strong>
+                </CModalHeader>
+                <CModalBody>
+                    {/* Conditional message using CoreUI CAlert */}
+                    {/* {showAlert && ( */}
+                    <CAlert color="warning">
+                        Please upload at least one image.
+                    </CAlert>
+                    {/* )} */}
+                    <CListGroup>
+                        {imageCategories.map((category, index) => (
+                            <CListGroupItem
+                                key={index}
+                                className="d-flex justify-content-between align-items-center"
+                            >
+                                {category}
+                                <div className="upload-btn-container">
+                                    {uploadStatus[category] === "completed" ? (
+                                        <CButton
+                                            color={hoveredCategory === category ? "danger" : "success"}
+                                            //   shape="pill" 
+                                            // color="success" // Green color when upload is complete
+                                            style={{ backgroundColor: "#4caf50", borderColor: "#4caf50", color: "white" }}  // Custom background and border color
+
+                                            variant="outline"
+                                            className="upload-completed-btn"
+                                            onMouseEnter={() => setHoveredCategory(category)}
+                                            onMouseLeave={() => setHoveredCategory(null)}
+                                            onClick={() => handleDelete(category)} // Handle delete functionality
+                                        >
+                                            {hoveredCategory === category ? (
+                                                <CIcon icon={cilTrash} /> // Show delete icon on hover
+                                            ) : (
+                                                <CIcon icon={cilCheckCircle} /> // Show check icon when not hovered
+                                            )}
+                                        </CButton>
+                                    ) : (
+                                        <CButton
+                                            color="primary"
+                                            // shape="pill" 
+                                            variant="outline"
+                                            style={{ backgroundColor: "#9e9e9e", borderColor: "#9e9e9e", color: "white" }}  // Custom grey background and border color
+
+                                            onClick={() => handleImageUpload(category)}
+                                        >
+                                            <CIcon icon={cilCloudUpload} />
+                                        </CButton>
+                                    )}
+                                </div>
+                            </CListGroupItem>
+                        ))}
+                    </CListGroup>
+                </CModalBody>
+                {/* <CModalFooter>
+    <CButton color="secondary" onClick={() => toggleModal()}>
+      Cancel
+    </CButton>
+  </CModalFooter> */}
+
+
+                <CModalFooter>
+                    <CButton
+                        color="secondary"
+                        onClick={() => {
+                            setUploadStatus({}); // Clear the status data
+                            setSelectedImages({}); // Clear all document IDs
+                            toggleModal(); // Close the modal
+                        }}
+                    >
+                        Cancel
+                    </CButton>
+                    <CButton
+                        color="primary"
+                        // onClick={handleSave} // Use the handleSave function to handle the save logic
+
+                        onClick={() => toggleModal()} // Close the modal without clearing data
+                    >
+                        Save
+                    </CButton>
+                </CModalFooter>
+            </CModal>
 
 
             {/* new addition ended */}
@@ -1277,6 +1348,7 @@ const UploadPhotoNonTab = () => {
                                     floatingLabel={
                                         <>
                                             <span style={textSmallStyle}>CA No</span>
+                                            <span className="text-danger">*</span>
                                         </>
                                     }
                                     placeholder="Enter CA No"
@@ -1381,6 +1453,7 @@ const UploadPhotoNonTab = () => {
                                     floatingLabel={
                                         <>
                                             <span style={textSmallStyle}>Meter No</span>
+                                            <span className="text-danger">*</span>
                                         </>
                                     }
                                     placeholder="Enter Meter No"
@@ -1392,7 +1465,7 @@ const UploadPhotoNonTab = () => {
                                     onChange={(event) => {
                                         const value = event.target.value;
                                         // Remove any non-digit characters and limit to 10 digits
-                                        const filteredValue = value.replace(/\D/g, '').slice(0, 12);
+                                        const filteredValue = value.replace(/\D/g, '').slice(0, 8);
                                         handleChange({ target: { value: filteredValue } }, 'meterno');
                                     }}
 
@@ -1402,109 +1475,37 @@ const UploadPhotoNonTab = () => {
                         </CRow>
 
 
-                        {/* <CRow className="mb-1 ">
 
-                            <CCol sm={4} className="mb-1">
-                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
-                                    <DatePicker
-                                        label="Activity Date From*"
-                                        format="DD/MM/YYYY"
-                                        // style={componentHeightStyle}
-                                        value={selectedValues.datefrom}
-                                        onChange={(newValue) => handleDateChange(newValue, 'datefrom')}
-                                        disableFuture
-
-                                        //another trial
-                                        slots={{
-                                            textField: (params) => (
-                                                <TextField
-                                                    {...params}
-                                                    sx={{
-                                                        width: '100%', // Adjust the width of the input
-                                                        '& .MuiInputBase-root': {
-                                                            borderRadius: '5px',
-                                                            '& input': {
-                                                                // color: 'white', // Text color when typing
-                                                                // handling dark theme
-                                                                color: colorModes == 'light' ? 'black' : 'white'
-
-                                                            },
-                                                        },
-                                                        '& .MuiInputLabel-root': {
-                                                            // handling dark theme
-                                                            color: colorModes == 'light' ? 'black' : 'white',
-                                                            // color: 'white', // Default label color
-                                                            fontSize: '14px', // Label font size
-                                                            // Styles for floating label when not focused
-                                                            '&.Mui-shrink': {
-                                                                // color: 'white', // Color of the floating label when shrunk
-                                                                // handling dark theme
-                                                                color: colorModes == 'light' ? 'black' : 'white',
-                                                            },
-                                                            // Ensure label color remains white when not focused
-                                                            '&.MuiInputLabel-formControl': {
-                                                                // color: 'white', // Color of the label in rest state
-                                                                // handling dark theme
-                                                                color: colorModes == 'light' ? 'black' : 'white',
-                                                            },
-                                                        },
-                                                        '& .MuiOutlinedInput-root': {
-                                                            '& fieldset': {
-                                                                // borderColor: 'rgba(255, 255, 255, 0.3)', // Border color
-                                                                borderColor: colorModes == 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'grey',
-                                                                // handling dark theme
-                                                                //  borderColor: colorModes == 'light' ? rgba(255, 255, 255, 0.1) : rgba(255, 255, 255, 0.3),
-                                                            },
-                                                            '&:hover fieldset': {
-                                                                // borderColor: 'rgba(255, 255, 255, 0.5)', // Border color on hover
-                                                                // borderColor: 'rgba(255, 255, 255, 0.5)',
-                                                                borderColor: colorModes == 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'grey',
-                                                                // handling dark theme
-                                                                // borderColor: colorModes == 'light' ? rgba(255, 255, 255, 0.1) : rgba(255, 255, 255, 0.3),
-                                                            },
-                                                            '&.Mui-focused fieldset': {
-                                                                borderColor: colorModes == 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'grey', // Border color when focused
-                                                                // handling dark theme
-                                                                // borderColor: colorModes == 'light' ? rgba(255, 255, 255, 0.1) : rgba(255, 255, 255, 0.3),
-                                                            },
-                                                            '& .MuiInputAdornment-root .MuiIconButton-root': {
-                                                                // color: 'white', // Icon color
-                                                                // handling dark theme
-                                                                color: colorModes == 'light' ? 'black' : 'white',
-                                                            },
-                                                        },
-                                                    }}
-                                                />
-                                            ),
-                                        }}
-                                    />
-                                </LocalizationProvider>
-                            </CCol>
-
-                            <CCol sm={4}
-                            // className="mb-1"
-                            >
-                       
-
-                                <CButton color="danger" variant="outline"
-                                    className="w-50"
-                                    onClick={toggleModal}
-                                >
-                                    <CIcon icon={cilImage} />
-                                    Upload
-                                </CButton>
-
-                            </CCol>
-
-
-                        </CRow> */}
 
                         <CRow className="mb-3 align-items-center">
+                            <CCol sm={4}>
+                                <CFormInput
+                                    type="text"
+                                    id="floatingInput"
+                                    floatingClassName="mb-3"
+                                    floatingLabel={
+                                        <>
+                                            <span style={textSmallStyle}>Lineman Id</span>
+                                            <span className="text-danger">*</span>
+                                        </>
+                                    }
+                                    placeholder="Enter Lineman Id"
+                                    className="custom-form-select"
 
+
+                                    value={selectedValues.linemanId} // Bind to state
+                                    onChange={(event) => {
+                                        // const value = event.target.value;
+                                        handleChange(event, 'linemanId')
+
+                                    }}
+
+                                />
+                            </CCol>
                             <CCol sm={4} className="mb-1">
                                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
                                     <DatePicker
-                                        label="Activity Date From*"
+                                        label="Activity*"
                                         format="DD/MM/YYYY"
                                         value={selectedValues.datefrom}
                                         onChange={(newValue) => handleDateChange(newValue, 'datefrom')}
@@ -1554,6 +1555,7 @@ const UploadPhotoNonTab = () => {
                             </CCol>
 
 
+
                             <CCol sm={4} className="d-flex justify-content-center mb-1">
                                 <CButton
                                     color="primary"
@@ -1571,7 +1573,7 @@ const UploadPhotoNonTab = () => {
                                 </CButton>
                             </CCol>
 
-                            <CCol sm={4} className="d-flex justify-content-center mb-1">
+                            {/* <CCol sm={4} className="d-flex justify-content-center mb-1">
                                 <CFormInput
                                     type="text"
                                     // value={`${imagesUploaded} Images Uploaded`}
@@ -1591,7 +1593,7 @@ const UploadPhotoNonTab = () => {
 
 
 
-                            </CCol>
+                            </CCol> */}
                         </CRow>
 
 

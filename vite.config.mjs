@@ -7,24 +7,7 @@ export default defineConfig(() => {
   return {
     base: './',
     build: {
-      outDir: 'build',
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('react')) {
-                return 'vendor-react'; // Creates a separate chunk for React
-              }
-              if (id.includes('lodash')) {
-                return 'vendor-lodash'; // Creates a separate chunk for lodash (if used)
-              }
-              // You can add more chunking logic here based on your dependencies
-              return 'vendor'; // General vendor chunk
-            }
-          },
-        },
-      },
-      chunkSizeWarningLimit: 12000, // Increase chunk size limit if needed
+      outDir: 'build'
     },
     css: {
       postcss: {

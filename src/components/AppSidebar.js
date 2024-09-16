@@ -1,5 +1,6 @@
 import React,{useState} from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import '../scss/styles.scss'; // Adjust the path based on where the file is located
 
 import {
   CCloseButton,
@@ -42,8 +43,13 @@ const AppSidebar = () => {
 
   return (
     <CSidebar
-      className="border-end"
+      // className="border-end"
+      // className="bg-info-sidebar border-end"
+      // className="bg-info-sidebar border-end"
+
       colorScheme="dark"
+      // colorScheme="light"
+
       position="fixed"
       unfoldable={unfoldable}
       visible={sidebarShow}

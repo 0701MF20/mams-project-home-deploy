@@ -1810,10 +1810,16 @@ const TotalCaseExec = () => {
                       <CTableDataCell className="text-center">{caseType == 'LOOSE' ? 'NA' : item.accountClass}</CTableDataCell>
 
                       <CTableDataCell className="text-center">
-                        {moment(item.startDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')}
+                        {/* {moment(item.startDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')} */}
+                        {moment(item.startDate).utc().format('DD/MM/YYYY')}
+
                       </CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {caseType == 'LOOSE' ? 'NA' : moment(item.finishDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')}
+                        {caseType == 'LOOSE' ? 'NA' : 
+                        moment(item.finishDate).utc().format('DD/MM/YYYY')
+
+                        // moment(item.finishDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')
+                        }
                       </CTableDataCell>
                       <CTableDataCell className="text-center">{caseType == 'LOOSE' ? item.consumerName : item.name}</CTableDataCell>
                       <CTableDataCell className="text-center">{caseType == 'LOOSE' ? 'NA' : item.fatherName}</CTableDataCell>

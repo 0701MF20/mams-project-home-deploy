@@ -6,7 +6,7 @@
   
   "description": "MAMS Portal",
   
-  "homepage": ".",
+  "homepage": "/testtest",
   
   "license": "Bses",
   
@@ -85,7 +85,7 @@
   "core-js": "^3.37.1",
   
     
-  "dayjs": "^1.11.12",
+  "dayjs": "^1.11.13",
   
     
   "file-saver": "^2.0.5",
@@ -185,5 +185,6 @@
   "vite": "^5.2.13"
   
   },
-    "proxy": "https://bsesapp1.bsesdelhi.com"
+  
+  "proxy": "https://bsesapp1.bsesdelhi.com"
 }

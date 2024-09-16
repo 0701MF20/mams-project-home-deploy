@@ -139,7 +139,7 @@
 
 
 import React, { Suspense, useEffect } from 'react'
-import { BrowserRouter, Route, Routes,Navigate  } from 'react-router-dom'
+import { BrowserRouter, Route, Routes,Navigate, HashRouter  } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 import { CSpinner, useColorModes } from '@coreui/react'
@@ -176,8 +176,8 @@ const App = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <BrowserRouter
-    //  basename="/MAMS_NEW"
+    <HashRouter
+    //  basename="/testdir"
      >
       <Suspense
         fallback={
@@ -200,7 +200,7 @@ const App = () => {
 
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 

@@ -1646,7 +1646,9 @@ console.log("test::::::img_src",image.src)
                     <CTableRow key={index} style={{ fontSize: 10 }}>
                       <CTableDataCell className="text-center">{item.caseType}</CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')}
+                        {/* {moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')} */}
+                        {moment(item.activityDate).utc().format('DD/MM/YYYY')}
+
                       </CTableDataCell>
 
                       <CTableDataCell className="text-center">{item.division}</CTableDataCell>

@@ -42,7 +42,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import moment from 'moment'
 import { TextField } from '@mui/material';
-import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
+import { ACTIVITYTYPE_URL, DIVISION_URL, DMS_BASE64_URL, DMS_TOKEN_URL, ORDERTYPE_URL, PHOTO_VERIFICATION_REPORT, PHOTOUPLOAD_URL, PHOTOUPLOADEXCEL_URL, TOTALEXECMIS_URL, TOTALEXECMISEXCEL_URL } from '../../../utils/ConstantURL'
 import { IoMdDownload } from "react-icons/io";
 import { useSelector } from 'react-redux'
 
@@ -88,7 +88,7 @@ const PhotoVerificationReport = () => {
     orderno: '',
     datefrom: null,
     dateTo: null,
-    caseType: ''
+    caseType: 'ORDER BASED'
   });
 
   const handleChange = (event, type) => {
@@ -201,11 +201,11 @@ const PhotoVerificationReport = () => {
 
 
         const token = sessionStorage.getItem('authToken');
-const decodedToken = jwtDecode(token);
+        const decodedToken = jwtDecode(token);
         console.log('Decoded Token:', decodedToken);
         const response = await axios.post(ACTIVITYTYPE_URL, {
           // id: '41007656',
-          id:decodedToken.userId,
+          id: decodedToken.userId,
           type: `${selectedValues.order}`
         }, {
           headers: {
@@ -319,10 +319,10 @@ const decodedToken = jwtDecode(token);
     }
 
 
-   // Fetch the first page of data
-   const processingToastId = toast.loading('Processing... Please wait', {
-    position: "top-center",
-  });
+    // Fetch the first page of data
+    const processingToastId = toast.loading('Processing... Please wait', {
+      position: "top-center",
+    });
 
 
     const token = sessionStorage.getItem('authToken');
@@ -447,80 +447,80 @@ const decodedToken = jwtDecode(token);
   const handleViewClick = async () => {
 
 
-    if (selectedValues.caseType === '' || selectedValues.caseType == null) {
-      toast.error('Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.caseType === '' || selectedValues.caseType == null) {
+    //   toast.error('Type is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
-      toast.error('Date From is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.datefrom === '' || selectedValues.datefrom == null) {
+    //   toast.error('Date From is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
-      toast.error('Date To is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.dateTo === '' || selectedValues.dateTo == null) {
+    //   toast.error('Date To is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.division === '' || selectedValues.division == null) {
-      toast.error('Division is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.division === '' || selectedValues.division == null) {
+    //   toast.error('Division is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.order === '' || selectedValues.order == null) {
-      toast.error('Order Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.order === '' || selectedValues.order == null) {
+    //   toast.error('Order Type is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.activity === '' || selectedValues.activity == null) {
-      toast.error('Activity Type is Mandatory', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.activity === '' || selectedValues.activity == null) {
+    //   toast.error('Activity Type is Mandatory', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
-      toast.error('ZDIN not available for Loose Case Type', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (selectedValues.caseType === 'LOOSE' && selectedValues.order == 'ZDIN') {
+    //   toast.error('ZDIN not available for Loose Case Type', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
-    const dateFrom = new Date(selectedValues.datefrom);
-    const dateTo = new Date(selectedValues.dateTo);
+    // const dateFrom = new Date(selectedValues.datefrom);
+    // const dateTo = new Date(selectedValues.dateTo);
 
-    if (dateFrom > dateTo) {
-      toast.error('Date From should be less than Date To', {
-        position: "top-center",
-        autoClose: 1000,
-        progress: undefined,
-      });
-      return;
-    }
+    // if (dateFrom > dateTo) {
+    //   toast.error('Date From should be less than Date To', {
+    //     position: "top-center",
+    //     autoClose: 1000,
+    //     progress: undefined,
+    //   });
+    //   return;
+    // }
 
 
 
@@ -529,32 +529,33 @@ const decodedToken = jwtDecode(token);
 
     let pageNumber = 1;
     const pageSize = 50;
+    const processingToastId = toast.loading('Processing... Please wait', {
+      position: "top-center",
+    });
 
     try {
       setLoader(true); // Show loader initially
       setData([]); // Clear previous data before starting new fetch
       // Show a "processing" toast before starting the API call
-      const processingToastId = toast.loading('Processing... Please wait', {
-        position: "top-center",
-      });
 
 
       while (true) {
         const response = await axios.post(
-          PHOTOUPLOAD_URL,
+          PHOTO_VERIFICATION_REPORT,
           {
-            userId: decodedToken.userId,
-            pageNumber: pageNumber,
-            caseType: selectedValues.caseType,
-            division: selectedValues.division,
-            orderType: selectedValues.order,
-            activityType: selectedValues.activity,
-            dateFrom: selectedValues.datefrom,
-            dateTo: selectedValues.dateTo,
+            //pagination need to end on backend
+            // pageNumber: pageNumber,
 
+
+            division: selectedValues.division,
+            caNumber: selectedValues.caNo,
             orderNo: selectedValues.orderno,
-            ca: selectedValues.caNo,
-            installerId: selectedValues.installername,
+            orderType: selectedValues.order,
+            verificationDateFrom: selectedValues.datefrom,
+            verificationDateTo: selectedValues.dateTo,
+            activityType: selectedValues.activity,
+            case: selectedValues.caseType,
+            userId: decodedToken.userId
           },
           {
             headers: {
@@ -564,7 +565,7 @@ const decodedToken = jwtDecode(token);
         );
 
         if (response.data && response.status === 200) {
-          const fetchedData = response.data.orderList;
+          const fetchedData = response.data.vData;
 
           if (fetchedData.length === 0 && pageNumber === 1) {
             // toast.error('No Data Found', {
@@ -680,26 +681,26 @@ const decodedToken = jwtDecode(token);
 
     const lowercasedSearchTerm = searchTerm.toLowerCase()
     return (
-      item.caseType.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.division.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.orderId.toLowerCase().includes(lowercasedSearchTerm) ||
-      item.caNo.toLowerCase().includes(lowercasedSearchTerm)
+      item.caNumber.toLowerCase().includes(lowercasedSearchTerm) ||
+      item.orderNo.toLowerCase().includes(lowercasedSearchTerm) ||
+      item.orderType.toLowerCase().includes(lowercasedSearchTerm) ||
+      item.division.toLowerCase().includes(lowercasedSearchTerm)
     )
   })
 
   const sortedAndFilteredData = filteredData.slice().sort((a, b) => {
-    if (orderBy === 'caseType') {
-      return order === 'asc' ? a.caseType.localeCompare(b.caseType) : b.caseType.localeCompare(a.caseType)
+    if (orderBy === 'caNumber') {
+      return order === 'asc' ? a.caNumber.localeCompare(b.caNumber) : b.caNumber.localeCompare(a.caNumber)
+    } else if (orderBy === 'orderNo') {
+      return order === 'asc' ? a.orderNo.localeCompare(b.orderNo) : b.orderNo.localeCompare(a.orderNo)
+    } else if (orderBy === 'orderType') {
+      return order === 'asc'
+        ? a.orderType.localeCompare(b.orderType)
+        : b.orderType.localeCompare(a.orderType)
     } else if (orderBy === 'division') {
-      return order === 'asc' ? a.division.localeCompare(b.ca) : b.division.localeCompare(a.ca)
-    } else if (orderBy === 'orderId') {
       return order === 'asc'
-        ? a.orderId.localeCompare(b.orderId)
-        : b.orderId.localeCompare(a.orderId)
-    } else if (orderBy === 'caNo') {
-      return order === 'asc'
-        ? a.caNo.localeCompare(b.caNo)
-        : b.caNo.localeCompare(a.caNo)
+        ? a.division.localeCompare(b.division)
+        : b.division.localeCompare(a.division)
     }
     return 0
   })
@@ -813,14 +814,14 @@ const decodedToken = jwtDecode(token);
   // };
 
   const handleImageClick = async (image) => {
-    console.log("actual img:::",image)
+    console.log("actual img:::", image)
     if (image.src.startsWith('data:image')) {
       // Image already has base64 data, just set it as selected
       setSelectedImage(image);
     } else if (image.src) {
       // Fetch base64 image if not already fetched
-console.log("test::::::img",image)
-console.log("test::::::img_src",image.src)
+      console.log("test::::::img", image)
+      console.log("test::::::img_src", image.src)
 
       const base64Image = await fetchBase64Image(image.src);
 
@@ -1115,7 +1116,7 @@ console.log("test::::::img_src",image.src)
                   className="col-sm-3 col-form-label"
                   style={textSmallStyle}
                 >
-                  Type<span className="text-danger">*</span>:
+                  <strong>Type</strong>    <span className="text-danger">*</span>:
                 </CFormLabel>
                 <CButtonGroup role="group" aria-label="Basic radio button group">
                   <CFormCheck
@@ -1142,11 +1143,11 @@ console.log("test::::::img_src",image.src)
                     onChange={handleRadioChange} // Handle radio change
                   />
 
-<CFormCheck
+                  <CFormCheck
                     type="radio"
                     button={{ color: 'danger', variant: 'outline' }}
                     name="btnradio"
-                    id="btnradio2"
+                    id="btnradio3"
                     autoComplete="off"
                     value="NON-TAB"
                     label="Non-Tab"
@@ -1391,7 +1392,7 @@ console.log("test::::::img_src",image.src)
                 </CFormSelect>
               </CCol>
             </CRow>
-       
+
 
             <CRow className="justify-content-center">
               <CCol xs={12} sm={6} md={4} lg={3} className="mb-2 d-flex justify-content-center">
@@ -1555,8 +1556,11 @@ console.log("test::::::img_src",image.src)
                     </CTableHeaderCell>
                     <CTableHeaderCell className="bg-body-tertiary">
                       {/* Action */}
-                      Photo
+                      Verification Date
                     </CTableHeaderCell>
+                    <CTableHeaderCell className="bg-body-tertiary">
+                      {/* Action */}
+                      Verified By                    </CTableHeaderCell>
 
 
                   </CTableRow>
@@ -1567,41 +1571,57 @@ console.log("test::::::img_src",image.src)
 
                   {paginatedData.map((item, index) => (
                     <CTableRow key={index} style={{ fontSize: 10 }}>
-                      <CTableDataCell className="text-center">{item.caseType}</CTableDataCell>
                       <CTableDataCell className="text-center">
-                        {moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY')}
+                        {selectedValues.caseType || "NA"}
                       </CTableDataCell>
 
-                      <CTableDataCell className="text-center">{item.division}</CTableDataCell>
-                      <CTableDataCell className="text-center">{item.orderId}</CTableDataCell>
-                      <CTableDataCell className="text-center">{item.caNo}</CTableDataCell>
-                      <CTableDataCell className="text-center">{item.orderType}</CTableDataCell>
-                      <CTableDataCell className="text-center">{item.activityType}</CTableDataCell>
-                      <CTableDataCell className="text-center">{item.newMeterNo}</CTableDataCell>
-
                       <CTableDataCell className="text-center">
-                        {item.oldMeterNo == "" ? "NA" : item.oldMeterNo}
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">
-                        {item.gunnyBagNo == "" ? "NA" : item.gunnyBagNo}
-                      </CTableDataCell>
-                      <CTableDataCell className="text-center">{item.linemanName}</CTableDataCell>
-                      <CTableDataCell className="text-center">
-
-                        <CButton color="danger" variant="outline"
-                          // onClick={() => {
-                          //   setImageGallery(true)
-                          //   setSelectedItem(item)
-                          // }}
-                          onClick={() => handleButtonClick(item)}
-
-                        >View</CButton>
-
+                        {item.activityDate ? moment(item.activityDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY') : "NA"}
                       </CTableDataCell>
 
+                      <CTableDataCell className="text-center">
+                        {item.division || "NA"}
+                      </CTableDataCell>
 
+                      <CTableDataCell className="text-center">
+                        {item.orderNo || "NA"}
+                      </CTableDataCell>
 
+                      <CTableDataCell className="text-center">
+                        {item.caNumber || "NA"}
+                      </CTableDataCell>
 
+                      <CTableDataCell className="text-center">
+                        {item.orderType || "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.activityType || "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.meterNo || "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.oldMeterNo ? item.oldMeterNo : "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.gunnyBagNo ? item.gunnyBagNo : "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.linemanName || "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.verificationDate ? moment(item.verificationDate, 'DD-MM-YYYY HH:mm:ss').format('DD/MM/YYYY') : "NA"}
+                      </CTableDataCell>
+
+                      <CTableDataCell className="text-center">
+                        {item.punchBy || "NA"}
+                      </CTableDataCell>
 
 
                     </CTableRow>
